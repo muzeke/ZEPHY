@@ -1,0 +1,181 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <limits>
+#include <tuple>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <cstdlib>
+#endif
+
+using namespace std;
+
+struct Transaction {
+    string type;  // "Deposit" or "Withdrawal"
+    int amount;
+};
+
+struct Account {
+    string name;
+    int balance;
+    vector<Transaction> history;
+};
+
+void displayMenu() {
+    cout << "\n1. Add Account\n";
+    cout << "2. Edit Account\n";
+    cout << "3. Delete Account\n";
+    cout << "4. Deposit\n";
+    cout << "5. Withdraw\n";
+    cout << "6. View Transaction History\n";
+    cout << "7. Display All Accounts\n";
+    cout << "8. Exit\n";
+    cout << "Enter your choice: ";
+}
+
+void addAccount(vector<Account>& accounts) {
+    Account newAccount;
+    cout << "Enter name: ";
+    cin >> newAccount.name;
+    cout << "Enter initial balance: ";
+    cin >> newAccount.balance;
+    accounts.push_back(newAccount);
+    cout << "Account added successfully.\n";
+}
+
+void displayAllAccounts(const vector<Account>& accounts) {
+    cout << "\nAll Accounts:\n";
+    int count = 1;
+    for (const auto& acc : accounts) {
+        cout << count << ". Name: " << acc.name << ", Balance: " << acc.balance << "\n";
+        count++;
+    }
+}
+
+void editAccount(vector<Account>& accounts) {
+    displayAllAccounts(accounts);
+    int choice;
+    cout << "Enter the number of the account to edit: ";
+    cin >> choice;
+    if (choice >= 1 && choice <= accounts.size()) {
+        cout << "Enter new name: ";
+        cin >> accounts[choice - 1].name;
+        cout << "Account updated successfully.\n";
+    } else {
+        cout << "Invalid selection.\n";
+    }
+}
+
+void deleteAccount(vector<Account>& accounts) {
+    displayAllAccounts(accounts);
+    int choice;
+    cout << "Enter the number of the account to delete: ";
+    cin >> choice;
+    if (choice >= 1 && choice <= accounts.size()) {
+        accounts.erase(accounts.begin() + choice - 1);
+        cout << "Account deleted successfully.\n";
+    } else {
+        cout << "Invalid selection.\n";
+    }
+}
+
+void deposit(vector<Account>& accounts) {
+    displayAllAccounts(accounts);
+    int choice;
+    cout << "Enter the number of the account to deposit into: ";
+    cin >> choice;
+    if (choice >= 1 && choice <= accounts.size()) {
+        int amount;
+        cout << "Enter the amount to deposit: ";
+        cin >> amount;
+        accounts[choice - 1].balance += amount;
+        accounts[choice - 1].history.push_back({"Deposit", amount});
+        cout << "Deposit successful.\n";
+    } else {
+        cout << "Invalid selection.\n";
+    }
+}
+
+void withdraw(vector<Account>& accounts) {
+    displayAllAccounts(accounts);
+    int choice;
+    cout << "Enter the number of the account to withdraw from: ";
+    cin >> choice;
+    if (choice >= 1 && choice <= accounts.size()) {
+        int amount;
+        cout << "Enter the amount to withdraw: ";
+        cin >> amount;
+        if (amount <= accounts[choice - 1].balance) {
+            accounts[choice - 1].balance -= amount;
+            accounts[choice - 1].history.push_back({"Withdrawal", amount});
+            cout << "Withdrawal successful.\n";
+        } else {
+            cout << "Insufficient funds.\n";
+        }
+    } else {
+        cout << "Invalid selection.\n";
+    }
+}
+
+void viewTransactionHistory(const vector<Account>& accounts) {
+    displayAllAccounts(accounts);
+    int choice;
+    cout << "Enter the number of the account to view its transaction history: ";
+    cin >> choice;
+    if (choice >= 1 && choice <= accounts.size()) {
+        cout << "\nTransaction History for " << accounts[choice - 1].name << ":\n";
+        for (const auto& trans : accounts[choice - 1].history) {
+            cout << "Type: " << trans.type << ", Amount: " << trans.amount << "\n";
+        }
+    } else {
+        cout << "Invalid selection.\n";
+    }
+}
+
+int main() {
+    vector<Account> accounts;
+    int choice;
+
+    do {
+        displayMenu();
+        if (!(cin >> choice)) {
+            cin.clear();  // Clear error flags
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');  // Discard invalid input
+            cout << "Error: Please enter a number.\n";
+            continue;  // Skip to the next iteration of the loop
+        }
+
+        switch (choice) {
+            case 1:
+                addAccount(accounts);
+                break;
+            case 2:
+                editAccount(accounts);
+                break;
+            case 3:
+                deleteAccount(accounts);
+                break;
+            case 4:
+                deposit(accounts);
+                break;
+            case 5:
+                withdraw(accounts);
+                break;
+            case 6:
+                viewTransactionHistory(accounts);
+                break;
+            case 7:
+                displayAllAccounts(accounts);
+                break;
+            case 8:
+                cout << "Exiting program.\n";
+                break;
+            default:
+                cout << "Error: Please enter a number between 1 and 8.\n";
+        }
+    } while (choice != 8);
+
+    return 0;
+}
